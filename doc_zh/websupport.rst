@@ -1,6 +1,6 @@
 .. _websupport:
 
-Sphinx Web Support
+Sphinx Web 支持
 ==================
 
 .. versionadded:: 1.1

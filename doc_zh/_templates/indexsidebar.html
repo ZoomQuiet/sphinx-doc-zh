@@ -1,28 +1,28 @@
-<h3>Download</h3>
+<h3>下载</h3>
 {% if version.endswith('(hg)') %}
-<p>This documentation is for version <b>{{ version }}</b>, which is
-  not released yet.</p>
-<p>You can use it from the
-  <a href="http://bitbucket.org/birkenfeld/sphinx/">Mercurial repo</a> or look for
-  released versions in the <a href="http://pypi.python.org/pypi/Sphinx">Python
-    Package Index</a>.</p>
+<p>当前文档基于尚未正式释放的版本: <b>{{ version }}</b>.</p>
+<p>可以从工程的
+  <a href="http://bitbucket.org/birkenfeld/sphinx/">水银仓库</a>获取,
+  或是查阅
+  <a href="http://pypi.python.org/pypi/Sphinx">Python 模块索引</a>的版本释放.</p>
 {% else %}
-<p>Current version: <b>{{ version }}</b></p>
-<p>Get Sphinx from the <a href="http://pypi.python.org/pypi/Sphinx">Python Package
-Index</a>, or install it with:</p>
+<p>当前版本: <b>{{ version }}</b></p>
+<p>从<a href="http://pypi.python.org/pypi/Sphinx">Python 模块索引</a>获取 Sphinx, 
+或是直接安装:</p>
 <pre>easy_install -U Sphinx</pre>
-<p>Latest <a href="http://sphinx.pocoo.org/latest/">development version docs</a>
-are also available.</p>
+<p>最新 <a href="http://sphinx.pocoo.org/latest/">开发文档</a>
+随包发放.</p>
 {% endif %}
 
-<h3>Questions? Suggestions?</h3>
+<h3>问题?建议?</h3>
 
-<p>Join the <a href="http://groups.google.com/group/sphinx-dev">Google group</a>:</p>
+<p>加入 <a href="http://groups.google.com/group/sphinx-dev">Google group</a>:</p>
 <form action="http://groups.google.com/group/sphinx-dev/boxsubscribe"
       style="padding-left: 1em">
   <input type="text" name="email" value="your@email"/>
   <input type="submit" name="sub" value="Subscribe" />
 </form>
-<p>or come to the <tt>#pocoo</tt> channel on FreeNode.</p>
-<p>You can also open an issue at the
+<p>或进入FreeNode的 <tt>#pocoo</tt> 频道 .</p>
+<p>也可以创建提案在bitbucket.org的
   <a href="http://www.bitbucket.org/birkenfeld/sphinx/issues/">tracker</a>.</p>
+  

@@ -1,6 +1,6 @@
 .. _extensions:
 
-Sphinx Extensions
+Sphinx 扩展
 =================
 
 .. module:: sphinx.application

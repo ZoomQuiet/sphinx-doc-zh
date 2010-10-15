@@ -2,7 +2,7 @@
 
 .. _templating:
 
-Templating
+模板
 ==========
 
 Sphinx uses the `Jinja <http://jinja.pocoo.org>`_ templating engine for its HTML

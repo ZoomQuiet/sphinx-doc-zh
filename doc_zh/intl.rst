@@ -1,6 +1,6 @@
 .. _intl:
 
-Internationalization
+国际化
 ====================
 
 .. versionadded:: 1.1

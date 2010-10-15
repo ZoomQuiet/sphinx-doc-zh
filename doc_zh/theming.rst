@@ -1,6 +1,6 @@
 .. highlightlang:: python
 
-HTML theming support
+HTML 样式支持
 ====================
 
 .. versionadded:: 0.6

@@ -1,68 +1,62 @@
 .. highlight:: rst
 
-First Steps with Sphinx
+Sphinx初尝
 =======================
 
-This document is meant to give a tutorial-like overview of all common tasks
-while using Sphinx.
-
-The green arrows designate "more info" links leading to advanced sections about
-the described task.
+本文旨在给出一个教程样的概览,以便大家快速明了 Sphnix 如何使用,
+点击绿色箭头的 "详细" 链接将进入对应操作的高级手册.
 
 
-Setting up the documentation sources
+
+配置文档资源
 ------------------------------------
 
-The root directory of a documentation collection is called the :term:`source
-directory`.  This directory also contains the Sphinx configuration file
-:file:`conf.py`, where you can configure all aspects of how Sphinx reads your
-sources and builds your documentation.  [#]_
+包含所有文档原始文本的目录称作: :term:`资源目录`.
+此目录也包含 Sphnix 配置文件 :file:`conf.py`,
+Sphnix 根据此文件的声明查阅和生成文档. [#]_
 
-Sphinx comes with a script called :program:`sphinx-quickstart` that sets up a
-source directory and creates a default :file:`conf.py` with the most useful
-configuration values from a few questions it asks you.  Just run ::
+
+Sphnix 内置了一个脚本 :program:`sphinx-quickstart`
+可以自动生成默认的 :file:`conf.py`, 只需调用之 ::
 
    $ sphinx-quickstart
 
-and answer its questions.  (Be sure to say yes to the "autodoc" extension.)
+并回答几个问题.  (注意,对 "autodoc" 回答 Yes.)
 
 
-Defining document structure
+定义文档结构
 ---------------------------
 
-Let's assume you've run :program:`sphinx-quickstart`.  It created a source
-directory with :file:`conf.py` and a master document, :file:`index.rst` (if you
-accepted the defaults).  The main function of the :term:`master document` is to
-serve as a welcome page, and to contain the root of the "table of contents tree"
-(or *toctree*).  This is one of the main things that Sphinx adds to
-reStructuredText, a way to connect multiple files to a single hierarchy of
-documents.
-
-.. sidebar:: reStructuredText directives
-
-   ``toctree`` is a reStructuredText :dfn:`directive`, a very versatile piece of
-   markup.  Directives can have arguments, options and content.
-
-   *Arguments* are given directly after the double colon following the
-   directive's name.  Each directive decides whether it can have arguments, and
-   how many.
-
-   *Options* are given after the arguments, in form of a "field list".  The
-   ``maxdepth`` is such an option for the ``toctree`` directive.
-
-   *Content* follows the options or arguments after a blank line.  Each
-   directive decides whether to allow content, and what to do with it.
-
-   A common gotcha with directives is that **the first line of the content must
-   be indented to the same level as the options are**.
+假定已经用 :program:`sphinx-quickstart` 生成了 :term:`资源目录` 并包含了:file:`conf.py` 
+以及主文档 :file:`index.rst` .
+:term:`主控文档` 作为欢迎页,也包含了"内容树索引"(或 *toctree*).
+这是 Sphnix 对reStructuredText 增加的主要特性之一: 快速在层次文档中关联多个文件.
 
 
-The toctree directive initially is empty, and looks like this::
+.. sidebar:: reStructuredText 指令s
+
+   ``toctree`` 是 reStructuredText :term:`指令`, 一种非常灵活的标记.
+   指令可以包含参数/选项和内容.
+
+   *Arguments* ~参数是紧跟在指令后,前缀两个冒号的名称.
+   每个指令都可以附加一个或多个参数.
+
+   *Options* ~ 选项在参数之后声明,使用 "字段列表" 格式.
+   比如说 ``maxdepth`` 就是 ``toctree`` 的可选择项之一.
+
+   *Content* 跟在选项之后,用一个空行引导.
+   每个指令各自决定是否包含内容和怎么使用.
+
+   指令的常见问题是
+   **每行内容必须缩进到选项的同一层级**
+
+
+toctree 指令起初是空的内容,类似::
 
    .. toctree::
       :maxdepth: 2
 
-You add documents listing them in the *content* of the directive::
+我们可以增补文档列表到 *内容* 区块 ::
 
    .. toctree::
       :maxdepth: 2
@@ -71,36 +65,33 @@ You add documents listing them in the *content* of the directive::
       tutorial
       ...
 
-This is exactly how the toctree for this documentation looks.  The documents to
-include are given as :term:`document name`\ s, which in short means that you
-leave off the file name extension and use slashes as directory separators.
-
-|more| Read more about :ref:`the toctree directive <toctree-directive>`.
-
-You can now create the files you listed in the toctree and add content, and
-their section titles will be inserted (up to the "maxdepth" level) at the place
-where the toctree directive is placed.  Also, Sphinx now knows about the order
-and hierarchy of your documents.  (They may contain ``toctree`` directives
-themselves, which means you can create deeply nested hierarchies if necessary.)
+这样就可以精确的控制文档的内容树展示.
+被包含的文档得使用 :term:`文档名`\ s 进行声明,
+即,省去后綴名,并不用正斜线前导的相对路径.
 
 
-Adding content
+|more| 参阅 :ref:`the toctree directive <toctree-directive>`.
+
+现在可以创建 toctree 中列出的内容文件,并且他们的章节名也将就地逐层显示(高于"maxdepth"层次的章节),
+同时,Sphnix 也理解包含文档的顺序.
+(被包含的文件一樣可使用 ``toctree`` 指令)
+
+
+
+追加内容
 --------------
 
-In Sphinx source files, you can use most features of standard reStructuredText.
-There are also several features added by Sphinx.  For example, you can add
-cross-file references in a portable way (which works for all output types) using
-the :rst:role:`ref` role.
-
-For an example, if you are viewing the HTML version you can look at the source
-for this document -- use the "Show Source" link in the sidebar.
-
-|more| See :ref:`rst-primer` for a more in-depth introduction to
-reStructuredText and :ref:`sphinxmarkup` for a full list of markup added by
-Sphinx.
+在Sphnix 源文件中,我们可以使用绝大多数 标准reStructuredText 的特性.
+同时还有2 Sphnix 增补的一系列新功能.
+例如,可以通过 :rst:role:`ref` 角色指令追加交叉引用(对所有输出都兼容).
+当前的HTML输出版本文档中,就可以在侧栏通过 "Show Source" 链接查阅源文本;
 
 
-Running the build
+|more| 参考 :ref:`rst-primer` 学习reStructuredText ,
+以及 :ref:`sphinxmarkup` 查阅所有 Sphnix 增补的标记.
+
+
+运行构建
 -----------------
 
 Now that you have added some files and content, let's make a first build of the
@@ -251,12 +242,5 @@ More topics to be covered
 - Writing extensions
 
 
-.. rubric:: Footnotes
+.. include:: tutorial-footnote.rst
 
-.. [#] This is the usual lay-out.  However, :file:`conf.py` can also live in
-       another directory, the :term:`configuration directory`.  See
-       :ref:`invocation`.
-
-.. |more| image:: more.png
-          :align: middle
-          :alt: more info

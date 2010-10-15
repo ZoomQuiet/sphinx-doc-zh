@@ -2,7 +2,7 @@
 
 .. _rst-primer:
 
-reStructuredText Primer
+reStructuredText 入门
 =======================
 
 This section is a brief introduction to reStructuredText (reST) concepts and

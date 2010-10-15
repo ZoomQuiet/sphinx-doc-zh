@@ -1,6 +1,6 @@
 .. _contents:
 
-Sphinx documentation contents
+Sphinx 文档内容
 =============================
 
 .. toctree::
@@ -26,7 +26,7 @@ Sphinx documentation contents
    examples
 
 
-Indices and tables
+索引和目录
 ==================
 
 * :ref:`genindex`
