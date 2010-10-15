@@ -65,3 +65,9 @@ Usage
 
 See :doc:`tutorial` for an introduction.  It also contains links to more
 advanced sections in this manual for the topics it discusses.
+
+
+翻译
+-----
+
+- Zoom.Quiet 101016 启动
