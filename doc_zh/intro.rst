@@ -67,15 +67,5 @@ See :doc:`tutorial` for an introduction.  It also contains links to more
 advanced sections in this manual for the topics it discusses.
 
 
-翻译
------
-
-- 101016 :term:`Zoom.Quiet` 不忿Sphnix官网只有日文翻译,启动个人快速翻译工程:
-    - 分支 Sphnix 1.1pre 在 https://bitbucket.org/Zoomq/sphinx_zh
-    - 发布 Sphnix_zh 在 http://zoomquiet.org/sphnix_zh/
-    - 完成首页翻译
-
-
-
 
 

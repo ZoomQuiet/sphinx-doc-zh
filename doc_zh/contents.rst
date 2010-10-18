@@ -21,6 +21,7 @@ Sphinx 文档内容
    websupport
 
    faq
+   chinese
    glossary
    changes
    examples

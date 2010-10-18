@@ -94,95 +94,101 @@ toctree 指令起初是空的内容,类似::
 运行构建
 -----------------
 
-Now that you have added some files and content, let's make a first build of the
-docs.  A build is started with the :program:`sphinx-build` program, called like
-this::
+现在我们已添加了一些文件,就可以尝试进行首次文档编译了.
+使用 :program:`sphinx-build` 脚本进行调用 ::
 
    $ sphinx-build -b html sourcedir builddir
 
-where *sourcedir* is the :term:`source directory`, and *builddir* is the
-directory in which you want to place the built documentation.  The :option:`-b`
-option selects a builder; in this example Sphinx will build HTML files.
 
-|more| See :ref:`invocation` for all options that :program:`sphinx-build`
-supports.
+*源目录*在 :term:`资源目录` ,*编译目录* 是我们指定的期望编译输出的目标目录.
+:option:`-b` 选项可选择编译器; 当前实例Sphnix 将编译输出 HTML 文档. 
 
-However, :program:`sphinx-quickstart` script creates a :file:`Makefile` and a
-:file:`make.bat` which make life even easier for you:  with them you only need
-to run ::
+
+|more| 参考 :ref:`invocation` 可知所有 :program:`sphinx-build` 支持的选项.
+
+其实 :program:`sphinx-quickstart` 脚本已经创建了 :file:`Makefile` 以及 :file:`make.bat` 
+可以令我们更加简单的随时进行编译,只要 ::
 
    $ make html
 
-to build HTML docs in the build directory you chose.  Execute ``make`` without
-an argument to see which targets are available.
+将在我们指定的目录中完成HTML 渲染. [#make]_
+如果执行 ``make`` 时没有跟任何选项,将看到相关说明. ::
+
+    $ make
+    Please use `make <target>' where <target> is one of
+      html       to make standalone HTML files
+      dirhtml    to make HTML files called index.html in directories
+      singlehtml to make one big HTML file
+      text       to make text files
+      man        to make manual pages
+      pickle     to make pickle files
+      json       to make json files
+      htmlhelp   to make HTML files and a HTML help project
+      qthelp     to make Qt help files and project
+      devhelp    to make Devhelp files and project
+      epub       to make an epub file
+      latex      to make LaTeX files, you can set PAPER=a4 or PAPER=letter
+      latexpdf   to make LaTeX files and run pdflatex
+      gettext    to make PO message catalogs
+      changes    to make an overview over all changed/added/deprecated items
+      linkcheck  to check all external links for integrity
 
 
-Documenting objects
--------------------
 
-One of Sphinx' main objectives is easy documentation of :dfn:`objects` (in a
-very general sense) in any :dfn:`domain`.  A domain is a collection of object
-types that belong together, complete with markup to create and reference
-descriptions of these objects.
+文档对象
+--------------------------------------
 
-The most prominent domain is the Python domain.  To e.g. document the Python
-built-in function ``enumerate()``, you would add this to one of your source
-files::
+一个Sphnix 的通用文档 :dfn:`objects` 是 :dfn:`domain` (域).
+一个域是通过标记来创建和定义的一批自定文档对象.
+
+大多数域就是Python域.
+比如说内部函式 ``enumerate()``, 我们可以直接应用到源文本中 ::
 
    .. py:function:: enumerate(sequence[, start=0])
 
-      Return an iterator that yields tuples of an index and an item of the
-      *sequence*. (And so on.)
-
-This is rendered like this:
+      返回一个迭代对象,递归式处理字典结构的索引或是其它类似序列内容
+      
+呈现类似:
 
 .. py:function:: enumerate(sequence[, start=0])
 
-   Return an iterator that yields tuples of an index and an item of the
-   *sequence*. (And so on.)
+    返回一个迭代对象,递归式处理字典结构的索引或是其它类似序列内容
 
-The argument of the directive is the :dfn:`signature` of the object you
-describe, the content is the documentation for it.  Multiple signatures can be
-given, each in its own line.
+这一指令的参数 :dfn:`signature` ,是我们自行描述的文档内容,可以在行内给多个. [#signature]_
 
-The Python domain also happens to be the default domain, so you don't need to
-prefix the markup with the domain name::
+Python 域名是作为默认域来尝试的,所以,不必在函式标记前聲明 ::
 
    .. function:: enumerate(sequence[, start=0])
 
       ...
 
-does the same job if you keep the default setting for the default domain.
+执行结果和之前一样.
 
-There are several more directives for documenting other types of Python objects,
-for example :rst:dir:`py:class` or :rst:dir:`py:method`.  There is also a
-cross-referencing :dfn:`role` for each of these object types.  This markup will
-create a link to the documentation of ``enumerate()``::
+另外还有一系列的Py对象类型的文档指令,
+比如 :rst:dir:`py:class` 或是 :rst:dir:`py:method` .
+也有类型对象都可用的交叉引用的 :dfn:`role` .
+这类标记将创建一个文档链接给 ``enumerate()`` ::
 
-   The :py:func:`enumerate` function can be used for ...
+   :py:func:`enumerate` 函式可用作...
 
-And here is the proof: A link to :func:`enumerate`.
+这儿可以检验一下效果: :func:`enumerate`.
 
-Again, the ``py:`` can be left out if the Python domain is the default one.  It
-doesn't matter which file contains the actual documentation for ``enumerate()``;
-Sphinx will find it and create a link to it.
+再次提示,这儿的 ``py:`` 可以忽略,效果一样.
+我们不用关心真实的 ``enumerate()`` 文档在哪个文件中,
+Sphnix 将找到它并正确链接上.
 
-Each domain will have special rules for how the signatures can look like, and
-make the formatted output look pretty, or add specific features like links to
-parameter types, e.g. in the C/C++ domains.
+每个域,都是为某个特殊领域内容的良好输出,或是为参数什么的自动追加链接,比如说 C/C++ 域.
 
-|more| See :ref:`domains` for all the available domains and their
-directives/roles.
+|more| 参考 :ref:`domains` 可知所有可用域以及指令/角色.
 
 
-Basic configuration
+基本配置
 -------------------
 
-Earlier we mentioned that the :file:`conf.py` file controls how Sphinx processes
-your documents.  In that file, which is executed as a Python source file, you
-assign configuration values.  For advanced users: since it is executed by
-Sphinx, you can do non-trivial tasks in it, like extending :data:`sys.path` or
-importing a module to find out the version your are documenting.
+之前提及我们使用 :file:`conf.py` 脚本来控制 Sphinx 怎么处理文档.
+实际上这是个标准的 Python 脚本,
+对于高级用户:可以嵌入自个儿的特殊任务,比如: 变更 :data:`sys.path`,
+或是导入另外的模块自动探察当前的文档版本.
 
 The config values that you probably want to change are already put into the
 :file:`conf.py` by :program:`sphinx-quickstart` and initially commented out
