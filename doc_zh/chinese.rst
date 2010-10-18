@@ -39,12 +39,12 @@
     - 完成首页翻译
 
 
-
-- $Author$
-- $Header$
-- $Date$
-- $Id$
-- $Revision$
+::
+    $Author$
+    $Header$
+    $Date$
+    $Id$
+    $Revision$
 
 
 
