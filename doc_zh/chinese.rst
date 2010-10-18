@@ -39,12 +39,14 @@
     - 完成首页翻译
 
 
+.. rubric:: 脚注
+
 ::
-    $Author$
-    $Header$
-    $Date$
-    $Id$
-    $Revision$
+
+    - $Author$
+    - $Date$
+    - $Id$
+    - $Revision$
 
 
 
