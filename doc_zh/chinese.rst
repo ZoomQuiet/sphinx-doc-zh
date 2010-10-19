@@ -43,10 +43,10 @@
 
 ::
 
-    - $Author$
-    - $Date$
-    - $Id$
-    - $Revision$
+    $Author$
+    $Date$
+    $Id$
+    $Revision$
 
 
 
