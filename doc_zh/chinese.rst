@@ -34,8 +34,9 @@
 记要
 -----
 
-- 101017 :term:`Zoom.Quiet` 独立出中译版翻译说明
-- 101015 :term:`Zoom.Quiet` 不忿Sphnix官网只有日文翻译,启动个人快速翻译工程:
+- 101018 +0.5h :term:`Zoom.Quiet` 配置开通keywords 支持
+- 101017 +0.5h :term:`Zoom.Quiet` 独立出中译版翻译说明
+- 101015 +2h :term:`Zoom.Quiet` 不忿Sphnix官网只有日文翻译,启动个人快速翻译工程:
     - 完成首页翻译
 
 

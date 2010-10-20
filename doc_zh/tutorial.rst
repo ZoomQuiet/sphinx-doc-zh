@@ -190,7 +190,9 @@ Sphnix 将找到它并正确链接上.
 对于高级用户:可以嵌入自个儿的特殊任务,比如: 变更 :data:`sys.path`,
 或是导入另外的模块自动探察当前的文档版本.
 
-配置项...
+相关配置项已经由 :program:`sphinx-quickstart` 在初始化时写入 :file:`conf.py`
+(并用 Py 的标准注释 ``#`` 将一些备选项,事先注释了)
+
 The config values that you probably want to change are already put into the
 :file:`conf.py` by :program:`sphinx-quickstart` and initially commented out
 (with standard Python syntax: a ``#`` comments the rest of the line).  To change
