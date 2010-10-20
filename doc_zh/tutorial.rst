@@ -191,25 +191,21 @@ Sphnix 将找到它并正确链接上.
 或是导入另外的模块自动探察当前的文档版本.
 
 相关配置项已经由 :program:`sphinx-quickstart` 在初始化时写入 :file:`conf.py`
-(并用 Py 的标准注释 ``#`` 将一些备选项,事先注释了)
+(使用 Py 的标准注释 ``#`` 将一些备选项,事先注释了)
+要修订对应配置,只要先消除对应行的注释,并修订参数值就好.
+想追加定制的参数,如果没由 :program:`sphinx-quickstart` 预先生成,自个儿追加也就是了.
 
-The config values that you probably want to change are already put into the
-:file:`conf.py` by :program:`sphinx-quickstart` and initially commented out
-(with standard Python syntax: a ``#`` comments the rest of the line).  To change
-the default value, remove the hash sign and modify the value.  To customize a
-config value that is not automatically added by :program:`sphinx-quickstart`,
-just add an additional assignment.
-
-Keep in mind that the file uses Python syntax for strings, numbers, lists and so
-on.  The file is saved in UTF-8 by default, as indicated by the encoding
-declaration in the first line.  If you use non-ASCII characters in any string
-value, you need to use Python Unicode strings (like ``project = u'Exposé'``).
-
-|more| See :ref:`build-config` for documentation of all available config values.
+注意,要保持配置文件严格使用 Python 脚本语法,特别是 字串,数字,列表等等.
+并且文件默认是以 UTF-0 编码保存的,已在首行进行聲明.
+如果有参数值使用非ASCII 字串,就得使用Python 的 Unicode 聲明形式(``project = u'Exposé'``)
 
 
-Autodoc
--------
+|more| 参考 :ref:`build-config` 了解所有配置项.
+
+
+自动化 Autodoc
+--------------
+
 
 When documenting Python code, it is common to put a lot of documentation in the
 source files, in documentation strings.  Sphinx supports the inclusion of
