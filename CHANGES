@@ -3,6 +3,8 @@ Release 1.1 (in development)
 
 * Added Python 3.x support.
 
+* Added a Texinfo builder.
+
 * Added i18n support for content, a ``gettext`` builder and
   related utilities.
 
@@ -18,6 +20,18 @@ Release 1.1 (in development)
 
 * Added ``inline`` option to graphviz directives, and fixed the
   default (block-style) in LaTeX output.
+
+* #521: Added :confval:`linkcheck_ignore` config value.
+
+* #526: Added Iranian translation.
+
+
+Release 1.0.5 (in development)
+==============================
+
+* #535: Fix LaTeX output generated for line blocks.
+
+* #544: Allow ``.pyw`` as a source file extension.
 
 
 Release 1.0.4 (Sep 17, 2010)

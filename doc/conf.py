@@ -21,7 +21,6 @@ show_authors = True
 html_theme = 'sphinxdoc'
 modindex_common_prefix = ['sphinx.']
 html_static_path = ['_static']
-html_index = 'index.html'
 html_sidebars = {'index': ['indexsidebar.html', 'searchbox.html']}
 html_additional_pages = {'index': 'index.html'}
 html_use_opensearch = 'http://sphinx.pocoo.org'
@@ -62,6 +61,12 @@ man_pages = [
      '', 1),
     ('man/sphinx-quickstart', 'sphinx-quickstart', 'Sphinx documentation '
      'template generator', '', 1),
+]
+
+texinfo_documents = [
+    ('contents', 'sphinx', 'Sphinx Documentation', 'Georg Brandl',
+     'Sphinx', 'The Sphinx documentation builder.', 'Documentation tools',
+     1),
 ]
 
 # We're not using intersphinx right now, but if we did, this would be part of

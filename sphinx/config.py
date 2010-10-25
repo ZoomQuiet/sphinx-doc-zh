@@ -159,6 +159,15 @@ class Config(object):
 
         # manpage options
         man_pages = ([], None),
+
+        # Texinfo options
+        texinfo_documents = ([], None),
+        texinfo_appendices = ([], None),
+        texinfo_elements = ({}, None),
+        texinfo_domain_indices = (True, None),
+
+        # linkcheck options
+        linkcheck_ignore = ([], None),
     )
 
     def __init__(self, dirname, filename, overrides, tags):

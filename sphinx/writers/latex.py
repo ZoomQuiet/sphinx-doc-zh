@@ -429,10 +429,8 @@ class LaTeXTranslator(nodes.NodeVisitor):
         elif self.this_is_the_title:
             if len(node.children) != 1 and not isinstance(node.children[0],
                                                           nodes.Text):
-                self.builder.warn(
-                    'document title is not a single Text node',
-                    '%s:%s' % (self.builder.env.doc2path(self.curfilestack[-1]),
-                               node.line or ''))
+                self.builder.warn('document title is not a single Text node',
+                                  (self.curfilestack[-1], node.line))
             if not self.elements['title']:
                 # text needs to be escaped since it is inserted into
                 # the output literally
@@ -465,8 +463,7 @@ class LaTeXTranslator(nodes.NodeVisitor):
             self.builder.warn(
                 'encountered title node not in section, topic, table, '
                 'admonition or sidebar',
-                '%s:%s' % (self.builder.env.doc2path(self.curfilestack[-1]),
-                           node.line or ''))
+                (self.curfilestack[-1], node.line or ''))
             self.body.append('\\textbf{')
             self.context.append('}\n')
         self.in_title = 1
@@ -1107,10 +1104,8 @@ class LaTeXTranslator(nodes.NodeVisitor):
                 self.body.append('\\grammartoken{')
             self.context.append('}')
         else:
-            self.builder.warn(
-                'unusable reference target found: %s' % uri,
-                '%s:%s' % (self.builder.env.doc2path(self.curfilestack[-1]),
-                           node.line or ''))
+            self.builder.warn('unusable reference target found: %s' % uri,
+                              (self.curfilestack[-1], node.line))
             self.context.append('')
     def depart_reference(self, node):
         self.body.append(self.context.pop())
@@ -1215,7 +1210,10 @@ class LaTeXTranslator(nodes.NodeVisitor):
             lang = node['language']
         if 'linenos' in node:
             linenos = node['linenos']
-        hlcode = self.highlighter.highlight_block(code, lang, linenos)
+        def warner(msg):
+            self.builder.warn(msg, (self.curfilestack[-1], node.line))
+        hlcode = self.highlighter.highlight_block(code, lang, linenos,
+                                                  warn=warner)
         # workaround for Unicode issue
         hlcode = hlcode.replace(u'€', u'@texteuro[]')
         # must use original Verbatim environment and "tabular" environment
@@ -1232,31 +1230,19 @@ class LaTeXTranslator(nodes.NodeVisitor):
     visit_doctest_block = visit_literal_block
     depart_doctest_block = depart_literal_block
 
-    def visit_line_block(self, node):
-        """line-block:
-        * whitespace (including linebreaks) is significant
-        * inline markup is supported.
-        * serif typeface
-        """
-        self.body.append('{\\raggedright{}')
-        self.literal_whitespace += 1
-    def depart_line_block(self, node):
-        self.literal_whitespace -= 1
-        # remove the last \\
-        del self.body[-1]
-        self.body.append('}\n')
-
     def visit_line(self, node):
-        self._line_start = len(self.body)
+        self.body.append('\item[] ')
     def depart_line(self, node):
-        if self._line_start == len(self.body):
-            # no output in this line -- add a nonbreaking space, else the
-            # \\ command will give an error
-            self.body.append('~')
-        if self.table is not None:
-            self.body.append('\\newline\n')
+        self.body.append('\n')
+
+    def visit_line_block(self, node):
+        if isinstance(node.parent, nodes.line_block):
+            self.body.append('\\item[]\n'
+                             '\\begin{DUlineblock}{\\DUlineblockindent}\n')
         else:
-            self.body.append('\\\\\n')
+            self.body.append('\n\\begin{DUlineblock}{0em}\n')
+    def depart_line_block(self, node):
+        self.body.append('\\end{DUlineblock}\n')
 
     def visit_block_quote(self, node):
         # If the block quote contains a single object and that object

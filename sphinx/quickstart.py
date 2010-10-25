@@ -254,6 +254,19 @@ man_pages = [
     ('%(master_str)s', '%(project_manpage)s', u'%(project_doc)s',
      [u'%(author_str)s'], 1)
 ]
+
+# -- Options for Texinfo output ------------------------------------------------
+
+# Grouping the document tree into Texinfo files. List of tuples
+# (source start file, target name, title, author,
+#  dir menu entry, description, category)
+texinfo_documents = [
+  ('%(master_str)s', '%(project_fn)s', u'%(project_doc)s', u'%(author_str)s',
+   '%(project_fn)s', 'One line description of project.', 'Miscellaneous'),
+]
+
+# Documents to append as an appendix to all manuals.
+texinfo_appendices = []
 '''
 
 EPUB_CONFIG = '''
@@ -364,6 +377,8 @@ help:
 \t@echo "  latexpdf   to make LaTeX files and run them through pdflatex"
 \t@echo "  text       to make text files"
 \t@echo "  man        to make manual pages"
+\t@echo "  texinfo    to make Texinfo files"
+\t@echo "  info       to make Texinfo files and run them through makeinfo"
 \t@echo "  gettext    to make PO message catalogs"
 \t@echo "  changes    to make an overview of all changed/added/deprecated items"
 \t@echo "  linkcheck  to check all external links for integrity"
@@ -451,6 +466,19 @@ man:
 \t@echo
 \t@echo "Build finished. The manual pages are in $(BUILDDIR)/man."
 
+texinfo:
+\t$(SPHINXBUILD) -b texinfo $(ALLSPHINXOPTS) $(BUILDDIR)/texinfo
+\t@echo
+\t@echo "Build finished. The Texinfo files are in $(BUILDDIR)/texinfo."
+\t@echo "Run \\`make' in that directory to run these through makeinfo" \\
+\t      "(use \\`make info' here to do that automatically)."
+
+info:
+\t$(SPHINXBUILD) -b texinfo $(ALLSPHINXOPTS) $(BUILDDIR)/texinfo
+\t@echo "Running Texinfo files through makeinfo..."
+\tmake -C $(BUILDDIR)/texinfo info
+\t@echo "makeinfo finished; the Info files are in $(BUILDDIR)/texinfo."
+
 gettext:
 \t$(SPHINXBUILD) -b gettext $(ALLSPHINXOPTS) $(BUILDDIR)/locale
 \t@echo
@@ -504,6 +532,7 @@ if "%%1" == "help" (
 \techo.  latex      to make LaTeX files, you can set PAPER=a4 or PAPER=letter
 \techo.  text       to make text files
 \techo.  man        to make manual pages
+\techo.  texinfo    to make Texinfo files
 \techo.  gettext    to make PO message catalogs
 \techo.  changes    to make an overview over all changed/added/deprecated items
 \techo.  linkcheck  to check all external links for integrity
@@ -519,6 +548,7 @@ if "%%1" == "clean" (
 
 if "%%1" == "html" (
 \t%%SPHINXBUILD%% -b html %%ALLSPHINXOPTS%% %%BUILDDIR%%/html
+\tif errorlevel 1 exit /b 1
 \techo.
 \techo.Build finished. The HTML pages are in %%BUILDDIR%%/html.
 \tgoto end
@@ -526,6 +556,7 @@ if "%%1" == "html" (
 
 if "%%1" == "dirhtml" (
 \t%%SPHINXBUILD%% -b dirhtml %%ALLSPHINXOPTS%% %%BUILDDIR%%/dirhtml
+\tif errorlevel 1 exit /b 1
 \techo.
 \techo.Build finished. The HTML pages are in %%BUILDDIR%%/dirhtml.
 \tgoto end
@@ -533,6 +564,7 @@ if "%%1" == "dirhtml" (
 
 if "%%1" == "singlehtml" (
 \t%%SPHINXBUILD%% -b singlehtml %%ALLSPHINXOPTS%% %%BUILDDIR%%/singlehtml
+\tif errorlevel 1 exit /b 1
 \techo.
 \techo.Build finished. The HTML pages are in %%BUILDDIR%%/singlehtml.
 \tgoto end
@@ -540,6 +572,7 @@ if "%%1" == "singlehtml" (
 
 if "%%1" == "pickle" (
 \t%%SPHINXBUILD%% -b pickle %%ALLSPHINXOPTS%% %%BUILDDIR%%/pickle
+\tif errorlevel 1 exit /b 1
 \techo.
 \techo.Build finished; now you can process the pickle files.
 \tgoto end
@@ -547,6 +580,7 @@ if "%%1" == "pickle" (
 
 if "%%1" == "json" (
 \t%%SPHINXBUILD%% -b json %%ALLSPHINXOPTS%% %%BUILDDIR%%/json
+\tif errorlevel 1 exit /b 1
 \techo.
 \techo.Build finished; now you can process the JSON files.
 \tgoto end
@@ -554,6 +588,7 @@ if "%%1" == "json" (
 
 if "%%1" == "htmlhelp" (
 \t%%SPHINXBUILD%% -b htmlhelp %%ALLSPHINXOPTS%% %%BUILDDIR%%/htmlhelp
+\tif errorlevel 1 exit /b 1
 \techo.
 \techo.Build finished; now you can run HTML Help Workshop with the ^
 .hhp project file in %%BUILDDIR%%/htmlhelp.
@@ -562,6 +597,7 @@ if "%%1" == "htmlhelp" (
 
 if "%%1" == "qthelp" (
 \t%%SPHINXBUILD%% -b qthelp %%ALLSPHINXOPTS%% %%BUILDDIR%%/qthelp
+\tif errorlevel 1 exit /b 1
 \techo.
 \techo.Build finished; now you can run "qcollectiongenerator" with the ^
 .qhcp project file in %%BUILDDIR%%/qthelp, like this:
@@ -573,6 +609,7 @@ if "%%1" == "qthelp" (
 
 if "%%1" == "devhelp" (
 \t%%SPHINXBUILD%% -b devhelp %%ALLSPHINXOPTS%% %%BUILDDIR%%/devhelp
+\tif errorlevel 1 exit /b 1
 \techo.
 \techo.Build finished.
 \tgoto end
@@ -580,6 +617,7 @@ if "%%1" == "devhelp" (
 
 if "%%1" == "epub" (
 \t%%SPHINXBUILD%% -b epub %%ALLSPHINXOPTS%% %%BUILDDIR%%/epub
+\tif errorlevel 1 exit /b 1
 \techo.
 \techo.Build finished. The epub file is in %%BUILDDIR%%/epub.
 \tgoto end
@@ -587,6 +625,7 @@ if "%%1" == "epub" (
 
 if "%%1" == "latex" (
 \t%%SPHINXBUILD%% -b latex %%ALLSPHINXOPTS%% %%BUILDDIR%%/latex
+\tif errorlevel 1 exit /b 1
 \techo.
 \techo.Build finished; the LaTeX files are in %%BUILDDIR%%/latex.
 \tgoto end
@@ -594,6 +633,7 @@ if "%%1" == "latex" (
 
 if "%%1" == "text" (
 \t%%SPHINXBUILD%% -b text %%ALLSPHINXOPTS%% %%BUILDDIR%%/text
+\tif errorlevel 1 exit /b 1
 \techo.
 \techo.Build finished. The text files are in %%BUILDDIR%%/text.
 \tgoto end
@@ -601,13 +641,23 @@ if "%%1" == "text" (
 
 if "%%1" == "man" (
 \t%%SPHINXBUILD%% -b man %%ALLSPHINXOPTS%% %%BUILDDIR%%/man
+\tif errorlevel 1 exit /b 1
 \techo.
 \techo.Build finished. The manual pages are in %%BUILDDIR%%/man.
 \tgoto end
 )
 
+if "%%1" == "texinfo" (
+\t%%SPHINXBUILD%% -b texinfo %%ALLSPHINXOPTS%% %%BUILDDIR%%/texinfo
+\tif errorlevel 1 exit /b 1
+\techo.
+\techo.Build finished. The Texinfo files are in %%BUILDDIR%%/texinfo.
+\tgoto end
+)
+
 if "%%1" == "gettext" (
 \t%%SPHINXBUILD%% -b gettext %%ALLSPHINXOPTS%% %%BUILDDIR%%/locale
+\tif errorlevel 1 exit /b 1
 \techo.
 \techo.Build finished. The message catalogs are in %%BUILDDIR%%/locale.
 \tgoto end
@@ -615,6 +665,7 @@ if "%%1" == "gettext" (
 
 if "%%1" == "changes" (
 \t%%SPHINXBUILD%% -b changes %%ALLSPHINXOPTS%% %%BUILDDIR%%/changes
+\tif errorlevel 1 exit /b 1
 \techo.
 \techo.The overview file is in %%BUILDDIR%%/changes.
 \tgoto end
@@ -622,6 +673,7 @@ if "%%1" == "changes" (
 
 if "%%1" == "linkcheck" (
 \t%%SPHINXBUILD%% -b linkcheck %%ALLSPHINXOPTS%% %%BUILDDIR%%/linkcheck
+\tif errorlevel 1 exit /b 1
 \techo.
 \techo.Link check complete; look for any errors in the above output ^
 or in %%BUILDDIR%%/linkcheck/output.txt.
@@ -630,6 +682,7 @@ or in %%BUILDDIR%%/linkcheck/output.txt.
 
 if "%%1" == "doctest" (
 \t%%SPHINXBUILD%% -b doctest %%ALLSPHINXOPTS%% %%BUILDDIR%%/doctest
+\tif errorlevel 1 exit /b 1
 \techo.
 \techo.Testing of doctests in the sources finished, look at the ^
 results in %%BUILDDIR%%/doctest/output.txt.
