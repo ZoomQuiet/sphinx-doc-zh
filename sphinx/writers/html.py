@@ -59,7 +59,11 @@ class HTMLTranslator(BaseTranslator):
         self.highlightlang = builder.config.highlight_language
         self.highlightlinenothreshold = sys.maxint
         self.protect_literal_text = 0
-        self.add_permalinks = builder.config.html_add_permalinks
+        self.permalink_text = builder.config.html_add_permalinks
+        # support backwards-compatible setting to a bool
+        if not isinstance(self.permalink_text, basestring):
+            self.permalink_text = self.permalink_text and u'\u00B6' or ''
+        self.permalink_text = self.encode(self.permalink_text)
         self.secnumber_suffix = builder.config.html_secnumber_suffix
 
     def visit_start_of_file(self, node):
@@ -81,11 +85,12 @@ class HTMLTranslator(BaseTranslator):
                and node['ids'] and node['first']:
             self.body.append('<!--[%s]-->' % node['ids'][0])
     def depart_desc_signature(self, node):
-        if node['ids'] and self.add_permalinks and self.builder.add_permalinks:
+        if node['ids'] and self.permalink_text and self.builder.add_permalinks:
             self.body.append(u'<a class="headerlink" href="#%s" '
                              % node['ids'][0] +
-                             u'title="%s">\u00B6</a>' %
-                             _('Permalink to this definition'))
+                             u'title="%s">%s</a>' % (
+                             _('Permalink to this definition'),
+                             self.permalink_text))
         self.body.append('</dt>\n')
 
     def visit_desc_addname(self, node):
@@ -480,19 +485,21 @@ class HTMLTranslator(BaseTranslator):
 
     def depart_title(self, node):
         close_tag = self.context[-1]
-        if (self.add_permalinks and self.builder.add_permalinks and
+        if (self.permalink_text and self.builder.add_permalinks and
             node.parent.hasattr('ids') and node.parent['ids']):
             aname = node.parent['ids'][0]
             # add permalink anchor
             if close_tag.startswith('</h'):
                 self.body.append(u'<a class="headerlink" href="#%s" ' % aname +
-                                 u'title="%s">\u00B6</a>' %
-                                 _('Permalink to this headline'))
+                                 u'title="%s">%s</a>' % (
+                                 _('Permalink to this headline'),
+                                 self.permalink_text))
             elif close_tag.startswith('</a></h'):
                 self.body.append(u'</a><a class="headerlink" href="#%s" ' %
                                  aname +
-                                 u'title="%s">\u00B6' %
-                                 _('Permalink to this headline'))
+                                 u'title="%s">%s' % (
+                                 _('Permalink to this headline'),
+                                 self.permalink_text))
 
         BaseTranslator.depart_title(self, node)
 

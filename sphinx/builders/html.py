@@ -117,7 +117,8 @@ class StandaloneHTMLBuilder(Builder):
         return self.config.html_theme, self.config.html_theme_options
 
     def init_templates(self):
-        Theme.init_themes(self)
+        Theme.init_themes(self.confdir, self.config.html_theme_path,
+                          warn=self.warn)
         themename, themeoptions = self.get_theme_config()
         self.theme = Theme(themename)
         self.theme_options = themeoptions.copy()
@@ -614,7 +615,11 @@ class StandaloneHTMLBuilder(Builder):
     def load_indexer(self, docnames):
         keep = set(self.env.all_docs) - set(docnames)
         try:
-            f = open(path.join(self.outdir, self.searchindex_filename), 'rb')
+            searchindexfn = path.join(self.outdir, self.searchindex_filename)
+            if self.indexer_dumps_unicode:
+                f = codecs.open(searchindexfn, 'r', encoding='utf-8')
+            else:
+                f = open(searchindexfn, 'rb')
             try:
                 self.indexer.load(f, self.indexer_format)
             finally:
@@ -691,7 +696,10 @@ class StandaloneHTMLBuilder(Builder):
             return uri
         ctx['pathto'] = pathto
         ctx['hasdoc'] = lambda name: name in self.env.all_docs
-        ctx['encoding'] = encoding = self.config.html_output_encoding
+        if self.name != 'htmlhelp':
+            ctx['encoding'] = encoding = self.config.html_output_encoding
+        else:
+            ctx['encoding'] = encoding = self.encoding
         ctx['toctree'] = lambda **kw: self._get_local_toctree(pagename, **kw)
         self.add_sidebars(pagename, ctx)
         ctx.update(addctx)
@@ -712,7 +720,7 @@ class StandaloneHTMLBuilder(Builder):
         # outfilename's path is in general different from self.outdir
         ensuredir(path.dirname(outfilename))
         try:
-            f = codecs.open(outfilename, 'w', encoding)
+            f = codecs.open(outfilename, 'w', encoding, 'xmlcharrefreplace')
             try:
                 f.write(output)
             finally:
@@ -926,6 +934,8 @@ class SerializingHTMLBuilder(StandaloneHTMLBuilder):
     #: (pickle, simplejson etc.)
     implementation = None
     implementation_dumps_unicode = False
+    #: additional arguments for dump()
+    additional_dump_args = ()
 
     #: the filename for the global context file
     globalcontext_filename = None
@@ -954,8 +964,7 @@ class SerializingHTMLBuilder(StandaloneHTMLBuilder):
         else:
             f = open(filename, 'wb')
         try:
-            # XXX: the third argument is pickle-specific!
-            self.implementation.dump(context, f, 2)
+            self.implementation.dump(context, f, *self.additional_dump_args)
         finally:
             f.close()
 
@@ -1006,6 +1015,7 @@ class PickleHTMLBuilder(SerializingHTMLBuilder):
     """
     implementation = pickle
     implementation_dumps_unicode = False
+    additional_dump_args = (pickle.HIGHEST_PROTOCOL,)
     indexer_format = pickle
     indexer_dumps_unicode = False
     name = 'pickle'

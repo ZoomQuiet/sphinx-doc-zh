@@ -23,7 +23,7 @@ from sphinx.util.nodes import make_refnode
 from sphinx.util.compat import Directive
 
 
-_identifier_re = re.compile(r'\b(~?[a-zA-Z_][a-zA-Z0-9_]*)\b')
+_identifier_re = re.compile(r'(~?\b[a-zA-Z_][a-zA-Z0-9_]*)\b')
 _whitespace_re = re.compile(r'\s+(?u)')
 _string_re = re.compile(r"[LuU8]?('([^'\\]*(?:\\.[^'\\]*)*)'"
                         r'|"([^"\\]*(?:\\.[^"\\]*)*)")', re.S)
@@ -326,9 +326,8 @@ class ArgumentDefExpr(DefExpr):
         return self.type.get_id()
 
     def __unicode__(self):
-        return (self.type is not None and u'%s %s' % (self.type, self.name)
-                or unicode(self.name)) + (self.default is not None and
-                                          u'=%s' % self.default or u'')
+        return (u'%s %s' % (self.type or u'', self.name or u'')).strip() + \
+               (self.default is not None and u'=%s' % self.default or u'')
 
 
 class NamedDefExpr(DefExpr):
@@ -448,9 +447,9 @@ class DefinitionParser(object):
         'mutable':      None,
         'const':        None,
         'typename':     None,
-        'unsigned':     set(('char', 'int', 'long')),
-        'signed':       set(('char', 'int', 'long')),
-        'short':        set(('int', 'short')),
+        'unsigned':     set(('char', 'short', 'int', 'long')),
+        'signed':       set(('char', 'short', 'int', 'long')),
+        'short':        set(('int',)),
         'long':         set(('int', 'long', 'double'))
     }
 
@@ -697,14 +696,13 @@ class DefinitionParser(object):
                     self.fail('expected comma between arguments')
                 self.skip_ws()
 
-            argname = self._parse_type()
-            argtype = default = None
+            argtype = self._parse_type()
+            argname = default = None
             self.skip_ws()
             if self.skip_string('='):
                 self.pos += 1
                 default = self._parse_default_expr()
             elif self.current_char not in ',)':
-                argtype = argname
                 argname = self._parse_name()
                 self.skip_ws()
                 if self.skip_string('='):

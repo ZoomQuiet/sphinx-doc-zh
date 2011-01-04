@@ -30,6 +30,8 @@ def setup_module():
     options = Struct(
         inherited_members = False,
         undoc_members = False,
+        private_members = False,
+        special_members = False,
         show_inheritance = False,
         noindex = False,
         synopsis = '',
@@ -490,6 +492,13 @@ def test_generate():
                   ],
                  'class', 'Class', member_order='bysource', all_members=True)
 
+    # test autodoc_docstring_signature
+    assert_result_contains(
+        '.. py:method:: DocstringSig.meth(FOO, BAR=1) -> BAZ', 'method',
+        'test_autodoc.DocstringSig.meth')
+    assert_result_contains(
+        '   rest of docstring', 'method', 'test_autodoc.DocstringSig.meth')
+
 
 # --- generate fodder ------------
 
@@ -580,3 +589,12 @@ class Outer(object):
 
     # should be documented as an alias
     factory = dict
+
+
+class DocstringSig(object):
+    def meth(self):
+        """meth(FOO, BAR=1) -> BAZ
+First line of docstring
+
+        rest of docstring
+        """

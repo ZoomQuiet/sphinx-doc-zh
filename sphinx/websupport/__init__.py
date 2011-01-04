@@ -9,6 +9,7 @@
     :license: BSD, see LICENSE for details.
 """
 
+import cgi
 import sys
 import cPickle as pickle
 import posixpath
@@ -16,44 +17,56 @@ from os import path
 
 from jinja2 import Environment, FileSystemLoader
 
+from docutils.core import publish_parts
+
 from sphinx.application import Sphinx
 from sphinx.util.osutil import ensuredir
 from sphinx.util.jsonimpl import dumps as dump_json
+from sphinx.websupport import errors
 from sphinx.websupport.search import BaseSearch, SEARCH_ADAPTERS
 from sphinx.websupport.storage import StorageBackend
-from sphinx.websupport.errors import *
-
-
-class WebSupportApp(Sphinx):
-    def __init__(self, *args, **kwargs):
-        self.staticdir = kwargs.pop('staticdir', None)
-        self.builddir = kwargs.pop('builddir', None)
-        self.search = kwargs.pop('search', None)
-        self.storage = kwargs.pop('storage', None)
-        Sphinx.__init__(self, *args, **kwargs)
 
 
 class WebSupport(object):
     """The main API class for the web support package. All interactions
     with the web support package should occur through this class.
     """
-    def __init__(self, srcdir='', builddir='', datadir='', search=None,
-                 storage=None, status=sys.stdout, warning=sys.stderr,
-                 moderation_callback=None, staticdir='static',
-                 docroot=''):
+    def __init__(self,
+                 srcdir=None,     # only required for building
+                 builddir='',     # the dir with data/static/doctrees subdirs
+                 datadir=None,    # defaults to builddir/data
+                 staticdir=None,  # defaults to builddir/static
+                 doctreedir=None, # defaults to builddir/doctrees
+                 search=None,     # defaults to no search
+                 storage=None,    # defaults to SQLite in datadir
+                 status=sys.stdout,
+                 warning=sys.stderr,
+                 moderation_callback=None,
+                 allow_anonymous_comments=True,
+                 docroot='',
+                 staticroot='static',
+                 ):
+        # directories
         self.srcdir = srcdir
         self.builddir = builddir
         self.outdir = path.join(builddir, 'data')
         self.datadir = datadir or self.outdir
-        self.staticdir = staticdir.strip('/')
+        self.staticdir = staticdir or path.join(self.builddir, 'static')
+        self.doctreedir = staticdir or path.join(self.builddir, 'doctrees')
+        # web server virtual paths
+        self.staticroot = staticroot.strip('/')
         self.docroot = docroot.strip('/')
+
         self.status = status
         self.warning = warning
         self.moderation_callback = moderation_callback
+        self.allow_anonymous_comments = allow_anonymous_comments
 
         self._init_templating()
         self._init_search(search)
         self._init_storage(storage)
+
+        self._globalcontext = None
 
         self._make_base_comment_options()
 
@@ -103,18 +116,26 @@ class WebSupport(object):
         It will also save node data to the database.
         """
         if not self.srcdir:
-            raise SrcdirNotSpecifiedError( \
-                'No srcdir associated with WebSupport object')
-        doctreedir = path.join(self.outdir, 'doctrees')
-        app = WebSupportApp(self.srcdir, self.srcdir,
-                            self.outdir, doctreedir, 'websupport',
-                            search=self.search, status=self.status,
-                            warning=self.warning, storage=self.storage,
-                            staticdir=self.staticdir, builddir=self.builddir)
+            raise RuntimeError('No srcdir associated with WebSupport object')
+        app = Sphinx(self.srcdir, self.srcdir, self.outdir, self.doctreedir,
+                     'websupport', status=self.status, warning=self.warning)
+        app.builder.set_webinfo(self.staticdir, self.staticroot,
+                                self.search, self.storage)
 
         self.storage.pre_build()
         app.build()
         self.storage.post_build()
+
+    def get_globalcontext(self):
+        """Load and return the "global context" pickle."""
+        if not self._globalcontext:
+            infilename = path.join(self.datadir, 'globalcontext.pickle')
+            f = open(infilename, 'rb')
+            try:
+                self._globalcontext = pickle.load(f)
+            finally:
+                f.close()
+        return self._globalcontext
 
     def get_document(self, docname, username='', moderator=False):
         """Load and return a document from a pickle. The document will
@@ -146,28 +167,38 @@ class WebSupport(object):
         * **relbar**: A div containing links to related documents
         * **title**: The title of the document
         * **css**: Links to css files used by Sphinx
-        * **js**: Javascript containing comment options
+        * **script**: Javascript containing comment options
 
         This raises :class:`~sphinx.websupport.errors.DocumentNotFoundError`
         if a document matching `docname` is not found.
 
         :param docname: the name of the document to load.
         """
-        infilename = path.join(self.datadir, 'pickles', docname + '.fpickle')
+        docpath = path.join(self.datadir, 'pickles', docname)
+        if path.isdir(docpath):
+            infilename = docpath + '/index.fpickle'
+            if not docname:
+                docname = 'index'
+            else:
+                docname += '/index'
+        else:
+            infilename = docpath + '.fpickle'
 
         try:
             f = open(infilename, 'rb')
         except IOError:
-            raise DocumentNotFoundError(
+            raise errors.DocumentNotFoundError(
                 'The document "%s" could not be found' % docname)
+        try:
+            document = pickle.load(f)
+        finally:
+            f.close()
 
-        document = pickle.load(f)
         comment_opts = self._make_comment_options(username, moderator)
-        comment_metadata = self.storage.get_metadata(docname, moderator)
+        comment_meta = self._make_metadata(
+            self.storage.get_metadata(docname, moderator))
 
-        document['js'] = '\n'.join([comment_opts,
-                                    self._make_metadata(comment_metadata),
-                                    document['js']])
+        document['script'] = comment_opts + comment_meta + document['script']
         return document
 
     def get_search_results(self, q):
@@ -181,12 +212,18 @@ class WebSupport(object):
         :param q: the search query
         """
         results = self.search.query(q)
-        ctx = {'search_performed': True,
-               'search_results': results,
-               'q': q}
-        document = self.get_document('search')
-        document['body'] = self.results_template.render(ctx)
-        document['title'] = 'Search Results'
+        ctx = {
+            'q': q,
+            'search_performed': True,
+            'search_results': results,
+            'docroot': '../', # XXX
+        }
+        document = {
+            'body': self.results_template.render(ctx),
+            'title': 'Search Results',
+            'sidebar': '',
+            'relbar': ''
+        }
         return document
 
     def get_data(self, node_id, username=None, moderator=False):
@@ -231,13 +268,16 @@ class WebSupport(object):
         return self.storage.get_data(node_id, username, moderator)
 
     def delete_comment(self, comment_id, username='', moderator=False):
-        """Delete a comment. Doesn't actually delete the comment, but
-        instead replaces the username and text files with "[deleted]" so
-        as not to leave any comments orphaned.
+        """Delete a comment.
 
-        If `moderator` is True, the comment will always be deleted. If
-        `moderator` is False, the comment will only be deleted if the
-        `username` matches the `username` on the comment.
+        If `moderator` is True, the comment and all descendants will be deleted
+        from the database, and the function returns ``True``.
+
+        If `moderator` is False, the comment will be marked as deleted (but not
+        removed from the database so as not to leave any comments orphaned), but
+        only if the `username` matches the `username` on the comment.  The
+        username and text files are replaced with "[deleted]" .  In this case,
+        the function returns ``False``.
 
         This raises :class:`~sphinx.websupport.errors.UserNotAuthorizedError`
         if moderator is False and `username` doesn't match username on the
@@ -247,7 +287,7 @@ class WebSupport(object):
         :param username: the username requesting the deletion.
         :param moderator: whether the requestor is a moderator.
         """
-        self.storage.delete_comment(comment_id, username, moderator)
+        return self.storage.delete_comment(comment_id, username, moderator)
 
     def add_comment(self, text, node_id='', parent_id='', displayed=True,
                     username=None, time=None, proposal=None,
@@ -276,9 +316,16 @@ class WebSupport(object):
         :param username: the username of the user making the comment.
         :param time: the time the comment was created, defaults to now.
         """
-        comment = self.storage.add_comment(text, displayed, username,
+        if username is None:
+            if self.allow_anonymous_comments:
+                username = 'Anonymous'
+            else:
+                raise errors.UserNotAuthorizedError()
+        parsed = self._parse_comment_text(text)
+        comment = self.storage.add_comment(parsed, displayed, username,
                                            time, proposal, node_id,
                                            parent_id, moderator)
+        comment['original_text'] = text
         if not displayed and self.moderation_callback:
             self.moderation_callback(comment)
         return comment
@@ -334,21 +381,8 @@ class WebSupport(object):
         :param moderator: Whether the user making the request is a moderator.
         """
         if not moderator:
-            raise UserNotAuthorizedError()
+            raise errors.UserNotAuthorizedError()
         self.storage.accept_comment(comment_id)
-
-    def reject_comment(self, comment_id, moderator=False):
-        """Reject a comment that is pending moderation.
-
-        This raises :class:`~sphinx.websupport.errors.UserNotAuthorizedError`
-        if moderator is False.
-
-        :param comment_id: The id of the comment that was accepted.
-        :param moderator: Whether the user making the request is a moderator.
-        """
-        if not moderator:
-            raise UserNotAuthorizedError()
-        self.storage.reject_comment(comment_id)
 
     def _make_base_comment_options(self):
         """Helper method to create the part of the COMMENT_OPTIONS javascript
@@ -357,19 +391,18 @@ class WebSupport(object):
         """
         self.base_comment_opts = {}
 
-        if self.docroot is not '':
+        if self.docroot != '':
             comment_urls = [
-                ('addCommentURL', 'add_comment'),
-                ('getCommentsURL', 'get_comments'),
-                ('processVoteURL', 'process_vote'),
-                ('acceptCommentURL', 'accept_comment'),
-                ('rejectCommentURL', 'reject_comment'),
-                ('deleteCommentURL', 'delete_comment')
+                ('addCommentURL', '_add_comment'),
+                ('getCommentsURL', '_get_comments'),
+                ('processVoteURL', '_process_vote'),
+                ('acceptCommentURL', '_accept_comment'),
+                ('deleteCommentURL', '_delete_comment')
             ]
             for key, value in comment_urls:
                 self.base_comment_opts[key] = \
                     '/' + posixpath.join(self.docroot, value)
-        if self.staticdir != 'static':
+        if self.staticroot != 'static':
             static_urls = [
                 ('commentImage', 'comment.png'),
                 ('closeCommentImage', 'comment-close.png'),
@@ -382,7 +415,7 @@ class WebSupport(object):
             ]
             for key, value in static_urls:
                 self.base_comment_opts[key] = \
-                    '/' + posixpath.join(self.staticdir, '_static', value)
+                    '/' + posixpath.join(self.staticroot, '_static', value)
 
     def _make_comment_options(self, username, moderator):
         """Helper method to create the parts of the COMMENT_OPTIONS
@@ -391,8 +424,6 @@ class WebSupport(object):
         :param username: The username of the user making the request.
         :param moderator: Whether the user making the request is a moderator.
         """
-        # XXX parts is not used?
-        #parts = [self.base_comment_opts]
         rv = self.base_comment_opts.copy()
         if username:
             rv.update({
@@ -400,15 +431,25 @@ class WebSupport(object):
                 'username': username,
                 'moderator': moderator,
             })
-        return '\n'.join([
-            '<script type="text/javascript">',
-            'var COMMENT_OPTIONS = %s;' % dump_json(rv),
-            '</script>'
-        ])
+        return '''\
+        <script type="text/javascript">
+        var COMMENT_OPTIONS = %s;
+        </script>
+        ''' % dump_json(rv)
 
     def _make_metadata(self, data):
-        return '\n'.join([
-            '<script type="text/javascript">',
-            'var COMMENT_METADATA = %s;' % dump_json(data),
-            '</script>'
-        ])
+        return '''\
+        <script type="text/javascript">
+        var COMMENT_METADATA = %s;
+        </script>
+        ''' % dump_json(data)
+
+    def _parse_comment_text(self, text):
+        settings = {'file_insertion_enabled': False,
+                    'output_encoding': 'unicode'}
+        try:
+            ret = publish_parts(text, writer_name='html',
+                                settings_overrides=settings)['fragment']
+        except Exception:
+            ret = cgi.escape(text)
+        return ret

@@ -33,7 +33,7 @@ class Node(Base):
 
     def nested_comments(self, username, moderator):
         """Create a tree of comments. First get all comments that are
-        descendents of this node, then convert them to a tree form.
+        descendants of this node, then convert them to a tree form.
 
         :param username: the name of the user to get comments for.
         :param moderator: whether the user is moderator.
@@ -56,6 +56,7 @@ class Node(Base):
         # Filter out all comments not descending from this node.
         q = q.filter(Comment.path.like(str(self.id) + '.%'))
 
+        # Filter out all comments that are not moderated yet.
         if not moderator:
             q = q.filter(Comment.displayed == True)
 
@@ -97,6 +98,22 @@ class Node(Base):
         self.source = source
 
 
+class CommentVote(Base):
+    """A vote a user has made on a Comment."""
+    __tablename__ = db_prefix + 'commentvote'
+
+    username = Column(String(64), primary_key=True)
+    comment_id = Column(Integer, ForeignKey(db_prefix + 'comments.id'),
+                        primary_key=True)
+    # -1 if downvoted, +1 if upvoted, 0 if voted then unvoted.
+    value = Column(Integer, nullable=False)
+
+    def __init__(self, comment_id, username, value):
+        self.comment_id = comment_id
+        self.username = username
+        self.value = value
+
+
 class Comment(Base):
     """An individual Comment being stored."""
     __tablename__ = db_prefix + 'comments'
@@ -113,6 +130,9 @@ class Comment(Base):
 
     node_id = Column(String, ForeignKey(db_prefix + 'nodes.id'))
     node = relation(Node, backref="comments")
+
+    votes = relation(CommentVote, backref="comment",
+                     cascade="all")
 
     def __init__(self, text, displayed, username, rating, time,
                  proposal, proposal_diff):
@@ -155,7 +175,7 @@ class Comment(Base):
                 'delta': self.pretty_delta(delta)}
 
         path = self.path.split('.')
-        node = path[0] if len(path) == 2 else None
+        node = path[0]
         parent = path[-2] if len(path) > 2 else None
 
         return {'text': self.text,
@@ -186,20 +206,3 @@ class Comment(Base):
             dt = (days, 'day')
 
         return '%s %s ago' % dt if dt[0] == 1 else '%s %ss ago' % dt
-
-
-class CommentVote(Base):
-    """A vote a user has made on a Comment."""
-    __tablename__ = db_prefix + 'commentvote'
-
-    username = Column(String(64), primary_key=True)
-    comment_id = Column(Integer, ForeignKey(db_prefix + 'comments.id'),
-                        primary_key=True)
-    comment = relation(Comment, backref="votes")
-    # -1 if downvoted, +1 if upvoted, 0 if voted then unvoted.
-    value = Column(Integer, nullable=False)
-
-    def __init__(self, comment_id, username, value):
-        self.comment_id = comment_id
-        self.username = username
-        self.value = value

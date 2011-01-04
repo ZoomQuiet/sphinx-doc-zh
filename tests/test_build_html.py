@@ -32,6 +32,9 @@ def teardown_module():
 html_warnfile = StringIO()
 
 ENV_WARNINGS = """\
+%(root)s/autodoc_fodder.py:docstring of autodoc_fodder\\.MarkupError:2: \
+\\(WARNING/2\\) Explicit markup ends without a blank line; unexpected \
+unindent\\.\\n?
 %(root)s/images.txt:9: WARNING: image file not readable: foo.png
 %(root)s/images.txt:23: WARNING: nonlocal image URI found: \
 http://www.python.org/logo.png
@@ -190,9 +193,13 @@ HTML_XPATH = {
         # custom sidebar
         (".//h4", 'Custom sidebar'),
         # docfields
-        (".//td[@class='field-body']/ul/li/strong", '^moo$'),
-        (".//td[@class='field-body']/ul/li/strong",
+        (".//td[@class='field-body']/strong", '^moo$'),
+        (".//td[@class='field-body']/strong",
              tail_check(r'\(Moo\) .* Moo')),
+        (".//td[@class='field-body']/ul/li/strong", '^hour$'),
+        (".//td[@class='field-body']/ul/li/em", '^DuplicateType$'),
+        (".//td[@class='field-body']/ul/li/em",
+             tail_check(r'.* Some parameter')),
     ],
     'contents.html': [
         (".//meta[@name='hc'][@content='hcval']", ''),

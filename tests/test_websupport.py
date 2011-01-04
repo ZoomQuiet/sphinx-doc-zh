@@ -65,7 +65,7 @@ class NullStorage(StorageBackend):
 @with_support(storage=NullStorage())
 def test_no_srcdir(support):
     """Make sure the correct exception is raised if srcdir is not given."""
-    raises(SrcdirNotSpecifiedError, support.build)
+    raises(RuntimeError, support.build)
 
 
 @skip_if(sqlalchemy_missing, 'needs sqlalchemy')
@@ -271,9 +271,9 @@ def test_moderation(support):
 
 
 def test_differ():
-    differ = CombinedHtmlDiff()
     source = 'Lorem ipsum dolor sit amet,\nconsectetur adipisicing elit,\n' \
         'sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
     prop = 'Lorem dolor sit amet,\nconsectetur nihil adipisicing elit,\n' \
         'sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
-    differ.make_html(source, prop)
+    differ = CombinedHtmlDiff(source, prop)
+    differ.make_html()

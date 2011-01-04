@@ -60,11 +60,13 @@ class SQLAlchemyStorage(StorageBackend):
                     proposal, node_id, parent_id, moderator):
         session = Session()
         proposal_diff = None
+        proposal_diff_text = None
 
         if node_id and proposal:
             node = session.query(Node).filter(Node.id == node_id).one()
-            differ = CombinedHtmlDiff()
-            proposal_diff = differ.make_html(node.source, proposal)
+            differ = CombinedHtmlDiff(node.source, proposal)
+            proposal_diff = differ.make_html()
+            proposal_diff_text = differ.make_text()
         elif parent_id:
             parent = session.query(Comment.displayed).\
                 filter(Comment.id == parent_id).one()
@@ -81,6 +83,8 @@ class SQLAlchemyStorage(StorageBackend):
         comment.set_path(node_id, parent_id)
         session.commit()
         d = comment.serializable()
+        d['document'] = comment.node.document
+        d['proposal_diff_text'] = proposal_diff_text
         session.close()
         return d
 
@@ -88,12 +92,23 @@ class SQLAlchemyStorage(StorageBackend):
         session = Session()
         comment = session.query(Comment).\
             filter(Comment.id == comment_id).one()
-        if moderator or comment.username == username:
+        if moderator:
+            # moderator mode: delete the comment and all descendants
+            # find descendants via path
+            session.query(Comment).filter(
+                Comment.path.like(comment.path + '.%')).delete(False)
+            session.delete(comment)
+            session.commit()
+            session.close()
+            return True
+        elif comment.username == username:
+            # user mode: do not really delete, but remove text and proposal
             comment.username = '[deleted]'
             comment.text = '[deleted]'
             comment.proposal = ''
             session.commit()
             session.close()
+            return False
         else:
             session.close()
             raise UserNotAuthorizedError()
@@ -154,21 +169,9 @@ class SQLAlchemyStorage(StorageBackend):
 
     def accept_comment(self, comment_id):
         session = Session()
-
-        # XXX assignment to "comment" needed?
-        comment = session.query(Comment).filter(
-            Comment.id == comment_id).update(
-            {Comment.displayed: True})
-
-        session.commit()
-        session.close()
-
-    def reject_comment(self, comment_id):
-        session = Session()
-
-        comment = session.query(Comment).\
-            filter(Comment.id == comment_id).one()
-        session.delete(comment)
+        session.query(Comment).filter(Comment.id == comment_id).update(
+            {Comment.displayed: True}
+        )
 
         session.commit()
         session.close()
