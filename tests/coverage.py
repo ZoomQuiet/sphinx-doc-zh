@@ -1160,4 +1160,4 @@ if __name__ == '__main__':
 # USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 # DAMAGE.
 #
-# $Id: coverage.py 100 2008-10-12 12:08:22Z nedbat $
+# $Id$
