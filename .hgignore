@@ -19,3 +19,5 @@
 ^distribute-
 ^tests/root/_build/*
 ^tests/root/generated/*
+^doc_zh/_build/*
+
