@@ -5,4 +5,4 @@
 Changes in Sphinx
 *****************
 
-.. include:: ../CHANGES
+.. include:: CHANGES
